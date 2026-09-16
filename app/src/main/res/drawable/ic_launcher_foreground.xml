@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Stylized letter A with anime blade/play cuts -->
+    <!-- Left Stem -->
+    <path
+        android:fillColor="#8F85FF"
+        android:pathData="M54,28 L32,80 L42,80 L49,62 L59,62 L54,50 L50,50 L54,39 Z" />
+    <!-- Right Stem -->
+    <path
+        android:fillColor="#B7ABFF"
+        android:pathData="M54,28 L76,80 L66,80 L59,62 L49,62 L54,50 L58,50 L54,39 Z" />
+    <!-- Glowing Crossbar Accent / Play symbol apex -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M48,58 L60,58 L54,72 Z" />
+</vector>

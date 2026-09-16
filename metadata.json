@@ -1,0 +1,6 @@
+{
+  "name": "Just Anime",
+  "description": "Android anime streaming application featuring discovery, AniList tracking, extension repository management, and Media3 video playback.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
