@@ -41,6 +41,12 @@ interface PlayerController {
     /** Toggles between play and pause states. */
     fun togglePlayPause()
 
+    /** Cycles through available resize modes. */
+    fun cycleResizeMode()
+
+    /** Toggles control panel lock state. */
+    fun toggleLock()
+
     /** Seeks to a specific timestamp in milliseconds. */
     fun seekTo(positionMs: Long)
 
@@ -56,23 +62,59 @@ interface PlayerController {
     /** Configures video aspect ratio / resize mode. */
     fun setResizeMode(mode: ResizeMode)
 
-    /** Toggles control panel lock state. */
-    fun toggleLock()
-
     /** Controls visibility of on-screen controls overlay. */
     fun setControlsVisible(visible: Boolean)
 
     /** Selects active subtitle track, or null to disable subtitles. */
     fun selectSubtitle(track: SubtitleTrack?)
 
+    /** Adjusts subtitle synchronization offset in milliseconds. */
+    fun adjustSubtitleDelay(deltaMs: Long)
+
+    /** Resets subtitle synchronization offset to 0. */
+    fun resetSubtitleDelay()
+
     /** Selects active audio track (e.g. Japanese original vs English dub). */
     fun selectAudioTrack(track: AudioTrack?)
+
+    /** Configures audio channel layout (e.g. Mono, Stereo, 5.1, 7.1). */
+    fun setAudioChannels(channels: String)
+
+    /** Toggles between Hardware (HW+) and Software (SW) decoder modes. */
+    fun toggleHardwareDecoder()
 
     /** Selects desired stream quality resolution. */
     fun selectQuality(quality: String)
 
     /** Skips active intro, outro, or recap segment marker. */
     fun skipActiveSegment()
+
+    /** Skips by the custom MegaSkip duration. */
+    fun megaSkip()
+
+    /** Cancels an ongoing auto-skip countdown. */
+    fun cancelAutoSkip()
+
+    /** Updates experimental playback settings. */
+    fun setExperimentalSettings(
+        enabled: Boolean? = null,
+        frameInterpolation: Boolean? = null,
+        pitchCorrection: Boolean? = null,
+        cacheMinutes: Int? = null,
+        demuxerBufferMb: Int? = null
+    )
+
+    /** Enables or disables custom shader enhancement. */
+    fun setShadersEnabled(enabled: Boolean)
+
+    /** Sets active shader profile. */
+    fun setShaderProfile(profile: String)
+
+    /** Sets double-tap seek increment in seconds. */
+    fun setDoubleTapSeekSeconds(seconds: Int)
+
+    /** Sets MegaSkip duration in seconds. */
+    fun setMegaSkipDurationSeconds(seconds: Int)
 
     /** Retries playback from current position after a network or stream error. */
     fun retry()

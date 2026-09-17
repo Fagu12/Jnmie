@@ -1,4 +1,5 @@
 package com.example.ui.screens.details
+import androidx.compose.material.icons.filled.CloudOff
 
 import android.content.Intent
 import android.net.Uri
@@ -33,7 +34,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Security
@@ -85,7 +86,7 @@ import com.example.domain.model.AnimeRelation
 import com.example.domain.model.AnimeStaff
 import com.example.domain.model.AnimeTag
 import com.example.domain.model.Episode
-import com.example.domain.model.ExtensionManifest
+import com.example.domain.model.ProviderInfo
 import com.example.ui.components.ContinueWatchingCard
 import com.example.ui.theme.AnimePrimary
 import com.example.ui.theme.DarkBackground
@@ -144,6 +145,23 @@ fun AnimeDetailsScreen(
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator(color = AnimePrimary, strokeWidth = 3.dp)
+            }
+        } else if (uiState.error != null && uiState.anime == null) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(Icons.Filled.CloudOff, contentDescription = "Error", tint = TextMuted, modifier = Modifier.size(48.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(uiState.error ?: "Failed to load", color = TextSecondary)
+                Spacer(modifier = Modifier.height(16.dp))
+                androidx.compose.material3.Button(
+                    onClick = { viewModel.loadAnime() },
+                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = AnimePrimary)
+                ) {
+                    Text("Retry", color = Color.Black)
+                }
             }
         } else {
             val anime = uiState.anime ?: return
@@ -585,16 +603,28 @@ fun AnimeDetailsScreen(
                         Spacer(modifier = Modifier.width(12.dp))
 
                         Column(modifier = Modifier.weight(1f)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = (uiState.selectedProvider?.name ?: "Authorized Provider").uppercase() + " • STREAM",
+                                    color = TextPrimary,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                if (uiState.isResolvingProvider) {
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    CircularProgressIndicator(
+                                        color = AnimePrimary,
+                                        modifier = Modifier.size(12.dp),
+                                        strokeWidth = 1.5.dp
+                                    )
+                                }
+                            }
                             Text(
-                                text = (uiState.selectedExtension?.name ?: "AniKoto").uppercase() + " • " + (uiState.selectedExtension?.language ?: "ENGLISH"),
-                                color = TextPrimary,
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = "Active extension resolver • Tap to change",
-                                color = TextSecondary,
-                                fontSize = 11.sp
+                                text = uiState.providerResolverStatus ?: "Active provider • Tap to change",
+                                color = if (uiState.isResolvingProvider) AnimePrimary else TextSecondary,
+                                fontSize = 11.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
 
@@ -775,10 +805,10 @@ fun AnimeDetailsScreen(
         // Source Bottom Sheet
         if (showSourceSheet) {
             SelectAnimeSourceSheet(
-                extensions = uiState.availableExtensions,
-                selected = uiState.selectedExtension,
+                providers = uiState.availableProviders,
+                selected = uiState.selectedProvider,
                 onSelect = {
-                    viewModel.selectExtension(it)
+                    viewModel.selectProvider(it)
                     showSourceSheet = false
                 },
                 onDismiss = { showSourceSheet = false }
@@ -891,7 +921,7 @@ private fun OverviewTabContent(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("Watch Video", color = AnimePrimary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                         Spacer(modifier = Modifier.width(4.dp))
-                        Icon(Icons.Filled.OpenInNew, contentDescription = null, tint = AnimePrimary, modifier = Modifier.size(14.dp))
+                        Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null, tint = AnimePrimary, modifier = Modifier.size(14.dp))
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
@@ -1500,7 +1530,7 @@ private fun LinkRowItem(
         }
 
         Icon(
-            imageVector = Icons.Filled.OpenInNew,
+            imageVector = Icons.AutoMirrored.Filled.OpenInNew,
             contentDescription = "Open Link",
             tint = TextSecondary,
             modifier = Modifier.size(16.dp)
@@ -1726,9 +1756,9 @@ private fun AniListStatusSheet(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SelectAnimeSourceSheet(
-    extensions: List<ExtensionManifest>,
-    selected: ExtensionManifest?,
-    onSelect: (ExtensionManifest) -> Unit,
+    providers: List<ProviderInfo>,
+    selected: ProviderInfo?,
+    onSelect: (ProviderInfo) -> Unit,
     onDismiss: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -1755,22 +1785,22 @@ private fun SelectAnimeSourceSheet(
                 .padding(horizontal = 20.dp, vertical = 10.dp)
         ) {
             Text(
-                text = "Select Anime Source",
+                text = "Select Streaming Provider",
                 color = TextPrimary,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Choose which extension resolves streams for this anime",
+                text = "Choose which authorized provider resolves streams for this anime",
                 color = TextSecondary,
                 fontSize = 13.sp
             )
             Spacer(modifier = Modifier.height(16.dp))
 
             LazyColumn {
-                items(extensions) { ext ->
-                    val isSelected = ext.id == selected?.id
+                items(providers) { provider ->
+                    val isSelected = provider.id == selected?.id
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1782,14 +1812,14 @@ private fun SelectAnimeSourceSheet(
                                 color = if (isSelected) AnimePrimary else DarkCardBorder,
                                 shape = RoundedCornerShape(14.dp)
                             )
-                            .clickable { onSelect(ext) }
+                            .clickable { onSelect(provider) }
                             .padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    text = ext.name,
+                                    text = provider.name,
                                     color = TextPrimary,
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.Bold
@@ -1802,7 +1832,7 @@ private fun SelectAnimeSourceSheet(
                                         .padding(horizontal = 6.dp, vertical = 2.dp)
                                 ) {
                                     Text(
-                                        text = ext.language,
+                                        text = "STREAM",
                                         color = AnimePrimary,
                                         fontSize = 9.sp,
                                         fontWeight = FontWeight.Bold
@@ -1811,7 +1841,7 @@ private fun SelectAnimeSourceSheet(
                             }
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = ext.description ?: ext.baseUrl,
+                                text = provider.description ?: provider.baseUrl,
                                 color = TextSecondary,
                                 fontSize = 11.sp,
                                 maxLines = 1

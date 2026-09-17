@@ -301,6 +301,7 @@ class AniListSyncIntegrationTest {
 
         // First call goes through
         syncManager.syncPlaybackProgress("21087", 4, false, immediate = false)
+        
         // Rapid second call with same progress within debounce window
         syncManager.syncPlaybackProgress("21087", 4, false, immediate = false)
 

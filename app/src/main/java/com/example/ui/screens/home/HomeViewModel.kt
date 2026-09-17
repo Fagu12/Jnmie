@@ -130,6 +130,7 @@ class HomeViewModel(
             val topRatedRes = animeRepository.getTopRated(page = 1)
             val airingRes = animeRepository.getAiringSchedule(page = 1)
 
+            val errors = listOf(trendingRes, popularRes, upcomingRes, topRatedRes, airingRes).mapNotNull { it.exceptionOrNull() }
             val trendingList = trendingRes.getOrDefault(emptyList())
             val popularList = popularRes.getOrDefault(emptyList())
             val upcomingList = upcomingRes.getOrDefault(emptyList())
@@ -147,7 +148,8 @@ class HomeViewModel(
                     popularSeasonAnime = popularList,
                     upcomingAnime = upcomingList,
                     topRatedAnime = topRatedList,
-                    airingSchedule = airingList
+                    airingSchedule = airingList,
+                    error = if (errors.isNotEmpty() && featuredList.isEmpty()) "Failed to load data. Please check your connection." else null
                 )
             }
         }

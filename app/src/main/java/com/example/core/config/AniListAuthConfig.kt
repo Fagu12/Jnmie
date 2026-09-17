@@ -20,8 +20,8 @@ object AniListAuthConfig {
      * Developers can replace this placeholder with their registered AniList Client ID
      * or inject it at build time via BuildConfig / .env.
      */
-    const val CLIENT_ID = "YOUR_ANILIST_CLIENT_ID" // Replace with real Client ID
-    const val CLIENT_SECRET = "YOUR_ANILIST_CLIENT_SECRET" // Replace with real Client Secret
+    const val CLIENT_ID = com.example.BuildConfig.ANILIST_CLIENT_ID
+    const val CLIENT_SECRET = com.example.BuildConfig.ANILIST_CLIENT_SECRET
     
     // Check if the app is running in AI Studio Preview environment
     // In a real app, this might be handled via build flavors

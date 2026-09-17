@@ -190,8 +190,68 @@ data class VideoSource(
     val headers: Map<String, String> = emptyMap(),
     val subtitles: List<SubtitleTrack> = emptyList(),
     val audioTracks: List<AudioTrack> = emptyList(),
-    val skipSegments: List<SkipSegment> = emptyList()
+    val skipSegments: List<SkipSegment> = emptyList(),
+    val hlsProxyUrl: String? = null,
+    val embedUrl: String? = null,
+    val format: StreamFormat = StreamFormat.HLS
 )
+
+enum class StreamFormat {
+    HLS,
+    PROGRESSIVE_MP4,
+    DASH,
+    UNKNOWN
+}
+
+enum class StreamQuality(val label: String) {
+    AUTO("Auto"),
+    Q_1080P("1080p"),
+    Q_720P("720p"),
+    Q_480P("480p"),
+    Q_360P("360p"),
+    Q_240P("240p");
+
+    companion object {
+        fun fromLabel(label: String): StreamQuality {
+            return entries.find { it.label.equals(label.trim(), ignoreCase = true) } ?: AUTO
+        }
+    }
+}
+
+enum class LanguagePreference(val label: String) {
+    AUTO("Auto"),
+    SUB("Sub"),
+    DUB("Dub")
+}
+
+data class AnikotoServer(
+    val id: String,
+    val name: String,
+    val type: String = "sub", // "sub" or "dub" or "raw"
+    val episodeId: String = "",
+    val embedUrl: String
+)
+
+sealed class PlaybackSource {
+    data class Hls(
+        val url: String,
+        val headers: Map<String, String> = emptyMap(),
+        val subtitles: List<SubtitleTrack> = emptyList(),
+        val audioTracks: List<AudioTrack> = emptyList(),
+        val hlsProxyUrl: String? = null
+    ) : PlaybackSource()
+
+    data class Mp4(
+        val url: String,
+        val headers: Map<String, String> = emptyMap(),
+        val subtitles: List<SubtitleTrack> = emptyList(),
+        val audioTracks: List<AudioTrack> = emptyList()
+    ) : PlaybackSource()
+
+    data class Embed(
+        val url: String
+    ) : PlaybackSource()
+}
 
 data class SubtitleTrack(
     val id: String,
@@ -221,58 +281,23 @@ data class SkipSegment(
     val endSeconds: Long
 )
 
-enum class ExtensionCapability(val displayName: String) {
-    SEARCH("Anime Search"),
-    DETAILS("Anime Details"),
-    EPISODES("Episode Listings"),
-    STREAM_SOURCES("Stream Sources"),
-    AUTO_SKIP_SEGMENTS("Skip Markers"),
-    MULTI_SUBTITLES("Multi-Subtitles"),
-    MULTI_AUDIO("Dual Audio"),
-    DIRECT_DOWNLOAD("Direct Download")
-}
-
-data class Extension(
+data class ProviderInfo(
     val id: String,
     val name: String,
-    val version: String,
-    val versionCode: Int = 1,
-    val language: String = "ENGLISH",
-    val iconUrl: String? = null,
     val baseUrl: String,
     val description: String? = null,
-    val isNsfw: Boolean = false,
-    val repoUrl: String,
+    val supportedServers: List<String> = listOf("Vidstream", "VidCloud", "Kiwi", "MegaPlay"),
     val isEnabled: Boolean = true,
-    val isInstalled: Boolean = true,
-    val hasUpdate: Boolean = false,
-    val latestVersion: String? = null,
-    val author: String = "Community",
-    val capabilities: Set<ExtensionCapability> = setOf(
-        ExtensionCapability.SEARCH,
-        ExtensionCapability.DETAILS,
-        ExtensionCapability.EPISODES,
-        ExtensionCapability.STREAM_SOURCES,
-        ExtensionCapability.AUTO_SKIP_SEGMENTS
-    ),
-    val supportedQualities: List<String> = listOf("1080p", "720p", "480p")
+    val isAuthorized: Boolean = true
 )
 
-typealias ExtensionManifest = Extension
-
-data class Repository(
-    val url: String,
-    val name: String,
-    val description: String? = null,
-    val extensionCount: Int = 0,
-    val lastRefreshed: Long = System.currentTimeMillis(),
-    val branch: String = "main",
-    val author: String? = null,
-    val websiteUrl: String? = null,
-    val isValid: Boolean = true
+data class ProviderResolutionState(
+    val isResolving: Boolean = false,
+    val currentProviderName: String? = null,
+    val totalSourcesFound: Int = 0,
+    val resolvedProviders: List<String> = emptyList(),
+    val error: String? = null
 )
-
-typealias ExtensionRepo = Repository
 
 data class AniListUser(
     val id: Long,
@@ -340,6 +365,16 @@ data class AppSettings(
     val preferredProviderId: String = "core_anilist",
     val syncConflictStrategy: String = "HIGHEST_PROGRESS",
     val autoSyncAniList: Boolean = true,
-    val lastSyncedTimestamp: Long = 0L
+    val lastSyncedTimestamp: Long = 0L,
+    val subEnabled: Boolean = true,
+    val subLanguage: String = "English",
+    val subFontFamily: String = "Default",
+    val subFontSize: String = "Medium",
+    val subFontWeight: String = "Normal",
+    val subTextColor: String = "White",
+    val subBackgroundStyle: String = "None",
+    val subBackgroundOpacity: Float = 0.5f,
+    val subOutlineStyle: String = "Outline",
+    val subPosition: String = "Bottom"
 )
 

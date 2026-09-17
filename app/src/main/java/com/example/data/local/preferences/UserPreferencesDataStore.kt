@@ -51,6 +51,17 @@ class UserPreferencesDataStore(private val context: Context) {
         val LAST_SYNCED_TIMESTAMP = longPreferencesKey("last_synced_timestamp")
         val ANILIST_AUTH_TOKEN = stringPreferencesKey("anilist_auth_token")
         val ANILIST_USERNAME = stringPreferencesKey("anilist_username")
+        
+        val SUB_ENABLED = booleanPreferencesKey("sub_enabled")
+        val SUB_LANGUAGE = stringPreferencesKey("sub_language")
+        val SUB_FONT_FAMILY = stringPreferencesKey("sub_font_family")
+        val SUB_FONT_SIZE = stringPreferencesKey("sub_font_size")
+        val SUB_FONT_WEIGHT = stringPreferencesKey("sub_font_weight")
+        val SUB_TEXT_COLOR = stringPreferencesKey("sub_text_color")
+        val SUB_BACKGROUND_STYLE = stringPreferencesKey("sub_background_style")
+        val SUB_BACKGROUND_OPACITY = floatPreferencesKey("sub_background_opacity")
+        val SUB_OUTLINE_STYLE = stringPreferencesKey("sub_outline_style")
+        val SUB_POSITION = stringPreferencesKey("sub_position")
     }
 
     val settingsFlow: Flow<AppSettings> = context.dataStore.data.map { preferences ->
@@ -84,7 +95,17 @@ class UserPreferencesDataStore(private val context: Context) {
             preferredProviderId = preferences[PreferencesKeys.PREFERRED_PROVIDER] ?: "core_anilist",
             syncConflictStrategy = preferences[PreferencesKeys.SYNC_CONFLICT_STRATEGY] ?: "HIGHEST_PROGRESS",
             autoSyncAniList = preferences[PreferencesKeys.AUTO_SYNC_ANILIST] ?: true,
-            lastSyncedTimestamp = preferences[PreferencesKeys.LAST_SYNCED_TIMESTAMP] ?: 0L
+            lastSyncedTimestamp = preferences[PreferencesKeys.LAST_SYNCED_TIMESTAMP] ?: 0L,
+            subEnabled = preferences[PreferencesKeys.SUB_ENABLED] ?: true,
+            subLanguage = preferences[PreferencesKeys.SUB_LANGUAGE] ?: "English",
+            subFontFamily = preferences[PreferencesKeys.SUB_FONT_FAMILY] ?: "Default",
+            subFontSize = preferences[PreferencesKeys.SUB_FONT_SIZE] ?: "Medium",
+            subFontWeight = preferences[PreferencesKeys.SUB_FONT_WEIGHT] ?: "Normal",
+            subTextColor = preferences[PreferencesKeys.SUB_TEXT_COLOR] ?: "White",
+            subBackgroundStyle = preferences[PreferencesKeys.SUB_BACKGROUND_STYLE] ?: "None",
+            subBackgroundOpacity = preferences[PreferencesKeys.SUB_BACKGROUND_OPACITY] ?: 0.5f,
+            subOutlineStyle = preferences[PreferencesKeys.SUB_OUTLINE_STYLE] ?: "Outline",
+            subPosition = preferences[PreferencesKeys.SUB_POSITION] ?: "Bottom"
         )
     }
 

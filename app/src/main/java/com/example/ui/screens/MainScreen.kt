@@ -10,11 +10,18 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import android.content.pm.ActivityInfo
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -23,6 +30,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.JustAnimeApp
+import com.example.ui.screens.player.findActivity
 import com.example.ui.components.JustAnimeBottomNav
 import com.example.ui.components.NavItem
 import com.example.ui.navigation.NavDestinations
@@ -30,8 +38,6 @@ import com.example.ui.screens.details.AnimeDetailsScreen
 import com.example.ui.screens.details.AnimeDetailsViewModel
 import com.example.ui.screens.explore.ExploreScreen
 import com.example.ui.screens.explore.ExploreViewModel
-import com.example.ui.screens.extensions.ExtensionsScreen
-import com.example.ui.screens.extensions.ExtensionsViewModel
 import com.example.ui.screens.home.HomeScreen
 import com.example.ui.screens.home.HomeViewModel
 import com.example.ui.screens.library.LibraryScreen
@@ -41,6 +47,7 @@ import com.example.ui.screens.player.PlayerViewModel
 import com.example.ui.screens.search.SearchScreen
 import com.example.ui.screens.search.SearchViewModel
 import com.example.ui.screens.settings.SettingsScreen
+import com.example.ui.screens.settings.SubtitleSettingsScreen
 import com.example.ui.screens.settings.SettingsViewModel
 import com.example.ui.theme.DarkBackground
 
@@ -63,7 +70,6 @@ fun MainScreen() {
         NavDestinations.HOME -> NavItem.HOME
         NavDestinations.EXPLORE -> NavItem.EXPLORE
         NavDestinations.LIBRARY -> NavItem.LIBRARY
-        NavDestinations.EXTENSIONS -> NavItem.EXTENSIONS
         NavDestinations.SETTINGS -> NavItem.SETTINGS
         else -> NavItem.HOME
     }
@@ -73,9 +79,23 @@ fun MainScreen() {
         NavDestinations.HOME,
         NavDestinations.EXPLORE,
         NavDestinations.LIBRARY,
-        NavDestinations.EXTENSIONS,
         NavDestinations.SETTINGS
     )
+
+    // Strictly restore portrait orientation and system bars whenever leaving the player
+    val isPlayerScreen = currentRoute?.startsWith("player") == true
+    DisposableEffect(isPlayerScreen) {
+        if (!isPlayerScreen) {
+            val act = context.findActivity()
+            act?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            val win = act?.window
+            if (win != null) {
+                val insetsController = WindowCompat.getInsetsController(win, win.decorView)
+                insetsController.show(WindowInsetsCompat.Type.systemBars())
+            }
+        }
+        onDispose {}
+    }
 
     Box(
         modifier = Modifier
@@ -164,20 +184,6 @@ fun MainScreen() {
                 )
             }
 
-            // 4. EXTENSIONS SCREEN
-            composable(NavDestinations.EXTENSIONS) {
-                val extViewModel: ExtensionsViewModel = viewModel(
-                    factory = ExtensionsViewModel.Factory(
-                        container.extensionManager,
-                        container.extensionRepository
-                    )
-                )
-                ExtensionsScreen(
-                    viewModel = extViewModel,
-                    onBack = { navController.popBackStack() }
-                )
-            }
-
             // 5. SETTINGS SCREEN
             composable(NavDestinations.SETTINGS) {
                 val settingsViewModel: SettingsViewModel = viewModel(
@@ -185,15 +191,30 @@ fun MainScreen() {
                         container.settingsRepository,
                         container.aniListRepository,
                         container.playbackRepository,
-                        container.extensionRepository
+                        container.providerManager
                     )
                 )
                 SettingsScreen(
                     viewModel = settingsViewModel,
                     onBack = { navController.popBackStack() },
-                    onNavigateToExtensions = {
-                        navController.navigate(NavDestinations.EXTENSIONS)
+                    onNavigateToSubtitleSettings = {
+                        navController.navigate(NavDestinations.SUBTITLE_SETTINGS)
                     }
+                )
+            }
+
+            composable(NavDestinations.SUBTITLE_SETTINGS) {
+                val settingsViewModel: SettingsViewModel = viewModel(
+                    factory = SettingsViewModel.Factory(
+                        container.settingsRepository,
+                        container.aniListRepository,
+                        container.playbackRepository,
+                        container.providerManager
+                    )
+                )
+                SubtitleSettingsScreen(
+                    viewModel = settingsViewModel,
+                    onBack = { navController.popBackStack() }
                 )
             }
 
@@ -225,9 +246,10 @@ fun MainScreen() {
                         animeId = animeId,
                         animeRepository = container.animeRepository,
                         playbackRepository = container.playbackRepository,
-                        extensionManager = container.extensionManager,
+                        providerManager = container.providerManager,
                         settingsRepository = container.settingsRepository,
-                        aniListRepository = container.aniListRepository
+                        aniListRepository = container.aniListRepository,
+                        sourceResolver = container.sourceResolver
                     )
                 )
                 AnimeDetailsScreen(
@@ -284,7 +306,6 @@ fun MainScreen() {
                         NavItem.HOME -> NavDestinations.HOME
                         NavItem.EXPLORE -> NavDestinations.EXPLORE
                         NavItem.LIBRARY -> NavDestinations.LIBRARY
-                        NavItem.EXTENSIONS -> NavDestinations.EXTENSIONS
                         NavItem.SETTINGS -> NavDestinations.SETTINGS
                     }
                     navController.navigate(destination) {

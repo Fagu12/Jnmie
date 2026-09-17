@@ -124,6 +124,7 @@ class AniListSyncManager(
             queuePendingSync(animeId, episodeNumber, if (completed) "COMPLETED" else "CURRENT", null, e.message)
             Result.success(Unit) // Return success so UI/playback is not interrupted
         } finally {
+            recentSyncTimestamps[dedupeKey] = System.currentTimeMillis()
             inFlightSyncs.remove(dedupeKey)
         }
     }

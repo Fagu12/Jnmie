@@ -142,7 +142,7 @@ class ExtensionPipelineTest {
             override suspend fun getExtensionInstance(extensionId: String): AnimeExtension = mockExtension
         }
 
-        val sourceResolver = SourceResolverImpl(fakeManager, safeEngine)
+        val sourceResolver = SourceResolverImpl(fakeManager)
 
         // Test resolveSources
         val sourcesResult = sourceResolver.resolveSources(
@@ -173,6 +173,24 @@ class ExtensionPipelineTest {
         assertTrue(epSourcesResult.isSuccess)
         val epSources = epSourcesResult.getOrThrow()
         assertTrue(epSources.isNotEmpty())
+
+        // Test resolveAnimeDetails dynamically
+        val detailsResult = sourceResolver.resolveAnimeDetails(
+            animeTitle = "Frieren: Beyond Journey's End",
+            preferredProviderId = MockAnimeExtension.ID
+        )
+        assertTrue(detailsResult.isSuccess)
+        val details = detailsResult.getOrThrow()
+        assertTrue(details.title.contains("Frieren"))
+
+        // Test resolveEpisodes dynamically
+        val episodesResult = sourceResolver.resolveEpisodes(
+            animeTitle = "Frieren: Beyond Journey's End",
+            preferredProviderId = MockAnimeExtension.ID
+        )
+        assertTrue(episodesResult.isSuccess)
+        val episodes = episodesResult.getOrThrow()
+        assertEquals(28, episodes.size)
     }
 
     @Test

@@ -9,24 +9,20 @@ import com.example.data.local.preferences.UserPreferencesDataStore
 import com.example.data.local.security.AndroidKeyStoreSecureTokenStorage
 import com.example.data.local.security.SecureTokenStorage
 import com.example.data.remote.anilist.AniListGraphQL
-import com.example.data.remote.extension.SafeExtensionEngine
 import com.example.data.repository.AniListRepositoryImpl
 import com.example.data.repository.AnimeRepositoryImpl
-import com.example.data.repository.ExtensionManagerImpl
-import com.example.data.repository.ExtensionRepositoryImpl
 import com.example.data.repository.PlaybackRepositoryImpl
+import com.example.data.repository.ProviderManagerImpl
 import com.example.data.repository.SearchRepositoryImpl
 import com.example.data.repository.SettingsRepositoryImpl
 import com.example.data.repository.SourceResolverImpl
 import com.example.domain.repository.AniListRepository
 import com.example.domain.repository.AnimeRepository
-import com.example.domain.repository.ExtensionManager
-import com.example.domain.repository.ExtensionRepository
 import com.example.domain.repository.PlaybackRepository
+import com.example.domain.repository.ProviderManager
 import com.example.domain.repository.SearchRepository
 import com.example.domain.repository.SettingsRepository
 import com.example.domain.repository.SourceResolver
-import com.example.domain.usecase.AddRepositoryUseCase
 import com.example.domain.usecase.AuthenticateAniListUseCase
 import com.example.domain.usecase.ClearWatchHistoryUseCase
 import com.example.domain.usecase.GetAniListUserUseCase
@@ -34,10 +30,8 @@ import com.example.domain.usecase.GetAnimeDetailsUseCase
 import com.example.domain.usecase.GetContinueWatchingUseCase
 import com.example.domain.usecase.GetEpisodesUseCase
 import com.example.domain.usecase.GetFavoriteAnimeUseCase
-import com.example.domain.usecase.GetInstalledExtensionsUseCase
 import com.example.domain.usecase.GetPopularSeasonAnimeUseCase
 import com.example.domain.usecase.GetRecentlyUpdatedAnimeUseCase
-import com.example.domain.usecase.GetRepositoriesUseCase
 import com.example.domain.usecase.GetSettingsUseCase
 import com.example.domain.usecase.GetTrendingAnimeUseCase
 import com.example.domain.usecase.GetWatchHistoryUseCase
@@ -49,7 +43,7 @@ import com.example.domain.usecase.UpdateSettingsUseCase
 
 /**
  * Dependency Injection Container Interface.
- * Acts as the centralized composition root for the application foundation,
+ * Centralized composition root for the application foundation,
  * providing access to data stores, database, repositories, use cases, and dispatchers.
  */
 interface AppContainer {
@@ -62,8 +56,7 @@ interface AppContainer {
     // Domain Repositories
     val animeRepository: AnimeRepository
     val aniListRepository: AniListRepository
-    val extensionRepository: ExtensionRepository
-    val extensionManager: ExtensionManager
+    val providerManager: ProviderManager
     val sourceResolver: SourceResolver
     val playbackRepository: PlaybackRepository
     val searchRepository: SearchRepository
@@ -86,10 +79,6 @@ interface AppContainer {
 
     val getSettingsUseCase: GetSettingsUseCase
     val updateSettingsUseCase: UpdateSettingsUseCase
-
-    val getRepositoriesUseCase: GetRepositoriesUseCase
-    val addRepositoryUseCase: AddRepositoryUseCase
-    val getInstalledExtensionsUseCase: GetInstalledExtensionsUseCase
 
     val getAniListUserUseCase: GetAniListUserUseCase
     val authenticateAniListUseCase: AuthenticateAniListUseCase
@@ -130,10 +119,6 @@ class DefaultAppContainer(private val context: Context) : AppContainer {
         AniListGraphQL()
     }
 
-    private val safeExtensionEngine: SafeExtensionEngine by lazy {
-        SafeExtensionEngine()
-    }
-
     val aniListSyncManager: com.example.data.sync.AniListSyncManager by lazy {
         com.example.data.sync.AniListSyncManager(
             aniListGraphQL = aniListGraphQL,
@@ -162,16 +147,12 @@ class DefaultAppContainer(private val context: Context) : AppContainer {
         AnimeRepositoryImpl(aniListGraphQL, database.animeDao(), database.playbackDao())
     }
 
-    override val extensionRepository: ExtensionRepository by lazy {
-        ExtensionRepositoryImpl(database.extensionDao(), safeExtensionEngine)
-    }
-
-    override val extensionManager: ExtensionManager by lazy {
-        ExtensionManagerImpl(database.extensionDao(), safeExtensionEngine)
+    override val providerManager: ProviderManager by lazy {
+        ProviderManagerImpl()
     }
 
     override val sourceResolver: SourceResolver by lazy {
-        SourceResolverImpl(extensionManager, safeExtensionEngine)
+        SourceResolverImpl(providerManager)
     }
 
     override val playbackRepository: PlaybackRepository by lazy {
@@ -226,16 +207,6 @@ class DefaultAppContainer(private val context: Context) : AppContainer {
     }
     override val updateSettingsUseCase: UpdateSettingsUseCase by lazy {
         UpdateSettingsUseCase(settingsRepository)
-    }
-
-    override val getRepositoriesUseCase: GetRepositoriesUseCase by lazy {
-        GetRepositoriesUseCase(extensionRepository)
-    }
-    override val addRepositoryUseCase: AddRepositoryUseCase by lazy {
-        AddRepositoryUseCase(extensionRepository)
-    }
-    override val getInstalledExtensionsUseCase: GetInstalledExtensionsUseCase by lazy {
-        GetInstalledExtensionsUseCase(extensionManager)
     }
 
     override val getAniListUserUseCase: GetAniListUserUseCase by lazy {

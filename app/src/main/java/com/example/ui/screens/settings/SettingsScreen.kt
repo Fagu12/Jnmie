@@ -112,7 +112,8 @@ import com.example.ui.util.getDisplayUsername
 fun SettingsScreen(
     viewModel: SettingsViewModel,
     onBack: () -> Unit,
-    onNavigateToExtensions: () -> Unit,
+    onNavigateToExtensions: () -> Unit = {},
+    onNavigateToSubtitleSettings: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -593,6 +594,25 @@ fun SettingsScreen(
 
                     HorizontalDivider(color = DarkCardBorder.copy(alpha = 0.4f))
 
+                    // Playback Speed
+                    Column {
+                        Text("Default Playback Speed", color = TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            listOf(0.75f to "0.75x", 1.0f to "1.0x", 1.25f to "1.25x", 1.5f to "1.5x", 2.0f to "2.0x").forEach { (speed, label) ->
+                                val isSel = uiState.settings.defaultPlaybackSpeed == speed
+                                SelectionChip(
+                                    label = label,
+                                    selected = isSel,
+                                    modifier = Modifier.weight(1f),
+                                    onClick = { viewModel.setDefaultPlaybackSpeed(speed) }
+                                )
+                            }
+                        }
+                    }
+
+                    HorizontalDivider(color = DarkCardBorder.copy(alpha = 0.4f))
+
                     // Skip duration
                     Column {
                         Text("Intro Skip Duration", color = TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Bold)
@@ -628,6 +648,13 @@ fun SettingsScreen(
                     )
                     HorizontalDivider(color = DarkCardBorder.copy(alpha = 0.4f))
                     SettingToggleRow(
+                        title = "Auto-Skip Recap",
+                        subtitle = "Skip previous episode recap segments automatically",
+                        checked = uiState.settings.autoSkipRecap,
+                        onCheckedChange = { viewModel.setAutoSkipRecap(it) }
+                    )
+                    HorizontalDivider(color = DarkCardBorder.copy(alpha = 0.4f))
+                    SettingToggleRow(
                         title = "Player Gestures",
                         subtitle = "Double tap to seek, vertical swipe for volume and brightness",
                         checked = uiState.settings.playerGestures,
@@ -649,6 +676,25 @@ fun SettingsScreen(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
+                    // Preferred Source
+                    Column {
+                        Text("Default Source Provider", color = TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            listOf("core_anilist" to "AniList (Sync)", "ext_gogo" to "GogoAnime", "ext_zoro" to "Zoro/HiAnime").forEach { (id, label) ->
+                                val isSel = uiState.settings.preferredProviderId == id
+                                SelectionChip(
+                                    label = label,
+                                    selected = isSel,
+                                    modifier = Modifier.weight(1f),
+                                    onClick = { viewModel.setPreferredProvider(id) }
+                                )
+                            }
+                        }
+                    }
+
+                    HorizontalDivider(color = DarkCardBorder.copy(alpha = 0.4f))
+
                     SettingToggleRow(
                         title = "Auto-Play Next Episode",
                         subtitle = "Automatically load the next episode when current finishes",
@@ -688,9 +734,9 @@ fun SettingsScreen(
                 }
             }
 
-            // 4. EXTENSIONS & REPOSITORIES SECTION
+            // 4. AUTHORIZED STREAMING PROVIDERS SECTION
             item {
-                SettingsSectionHeader("Extensions & Repositories", Icons.Filled.Extension)
+                SettingsSectionHeader("Authorized Streaming Providers", Icons.Filled.Source)
                 Spacer(modifier = Modifier.height(8.dp))
                 Column(
                     modifier = Modifier
@@ -699,63 +745,68 @@ fun SettingsScreen(
                         .background(DarkSurfaceVariant)
                         .border(1.dp, DarkCardBorder, RoundedCornerShape(16.dp))
                         .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onNavigateToExtensions() }
-                            .testTag("settings_manage_extensions_button"),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(42.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(Color(0xFF1B2032)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Source,
-                                contentDescription = null,
-                                tint = AnimePrimary,
-                                modifier = Modifier.size(22.dp)
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = "Manage Extensions & Repositories",
-                                color = TextPrimary,
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = "Configure Git repository URLs, enable anime scrapers, and update provider add-ons",
-                                color = TextSecondary,
-                                fontSize = 12.sp,
-                                lineHeight = 16.sp
-                            )
-                        }
-
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
-                            contentDescription = null,
-                            tint = AnimePrimary,
-                            modifier = Modifier.size(14.dp)
-                        )
-                    }
-
-                    HorizontalDivider(color = DarkCardBorder.copy(alpha = 0.4f))
-
-                    SettingToggleRow(
-                        title = "Auto-Update Extensions",
-                        subtitle = "Automatically check for new provider scraper versions when repositories sync",
-                        checked = uiState.settings.autoUpdateExtensions,
-                        onCheckedChange = { viewModel.setAutoUpdateExtensions(it) }
+                    Text(
+                        text = "Native Providers & Media Extractors",
+                        color = TextPrimary,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold
                     )
+                    Text(
+                        text = "Authorized high-speed streaming resolvers built into the app engine. Video streams are resolved directly and played with hardware acceleration.",
+                        color = TextSecondary,
+                        fontSize = 12.sp,
+                        lineHeight = 16.sp
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    uiState.availableProviders.forEach { prov ->
+                        val isPreferred = uiState.settings.preferredProviderId == prov.id
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(if (isPreferred) AnimePrimary.copy(alpha = 0.12f) else DarkBackground)
+                                .border(1.dp, if (isPreferred) AnimePrimary else DarkCardBorder, RoundedCornerShape(12.dp))
+                                .clickable { viewModel.setPreferredProvider(prov.id) }
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = prov.name,
+                                        color = TextPrimary,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    if (isPreferred) {
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = "(Default)",
+                                            color = AnimePrimary,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                    }
+                                }
+                                Text(
+                                    text = prov.description ?: prov.baseUrl,
+                                    color = TextSecondary,
+                                    fontSize = 11.sp
+                                )
+                            }
+                            if (isPreferred) {
+                                Icon(
+                                    imageVector = Icons.Filled.CheckCircle,
+                                    contentDescription = null,
+                                    tint = AnimePrimary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                    }
                 }
             }
 

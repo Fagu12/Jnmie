@@ -170,7 +170,8 @@ class ExploreViewModel(
                     isLoadingMore = false,
                     animeList = combined,
                     currentPage = page,
-                    hasNextPage = newItems.isNotEmpty() && newItems.size >= 15
+                    hasNextPage = newItems.isNotEmpty() && newItems.size >= 15,
+                    error = result.exceptionOrNull()?.message
                 )
             }
         }

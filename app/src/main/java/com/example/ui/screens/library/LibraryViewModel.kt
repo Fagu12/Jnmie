@@ -37,7 +37,8 @@ data class LibraryUiState(
     val favorites: List<Anime> = emptyList(),
     val watchHistory: List<PlaybackProgress> = emptyList(),
     val cardStyle: String = "Saikou",
-    val historyCardStyle: String = "Frosted Glass"
+    val historyCardStyle: String = "Frosted Glass",
+    val error: String? = null
 )
 
 class LibraryViewModel(
@@ -105,8 +106,9 @@ class LibraryViewModel(
 
     private fun loadData() {
         viewModelScope.launch {
-            val trending = animeRepository.getTrendingAnime(1).getOrDefault(emptyList())
-            _uiState.update { it.copy(libraryAnime = trending) }
+            val res = animeRepository.getTrendingAnime(1)
+            val trending = res.getOrDefault(emptyList())
+            _uiState.update { it.copy(libraryAnime = trending, error = res.exceptionOrNull()?.message) }
         }
     }
 

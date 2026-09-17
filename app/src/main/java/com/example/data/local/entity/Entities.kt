@@ -46,37 +46,6 @@ data class FavoriteAnimeEntity(
 )
 
 @Entity(
-    tableName = "extension_repos"
-)
-data class ExtensionRepoEntity(
-    @PrimaryKey val url: String,
-    val name: String,
-    val description: String?,
-    val extensionCount: Int,
-    val lastRefreshed: Long = System.currentTimeMillis()
-)
-
-@Entity(
-    tableName = "installed_extensions",
-    indices = [
-        Index(value = ["isEnabled"])
-    ]
-)
-data class InstalledExtensionEntity(
-    @PrimaryKey val id: String,
-    val name: String,
-    val version: String,
-    val language: String,
-    val iconUrl: String?,
-    val baseUrl: String,
-    val description: String?,
-    val isNsfw: Boolean,
-    val repoUrl: String,
-    val isEnabled: Boolean = true,
-    val supportedQualitiesJson: String = "1080p,720p,480p"
-)
-
-@Entity(
     tableName = "cached_anime",
     indices = [
         Index(value = ["cachedAt"])

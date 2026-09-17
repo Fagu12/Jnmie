@@ -256,12 +256,12 @@ class AnimeRepositoryImpl(
                 thumbnail = anime?.bannerUrl ?: anime?.coverUrl,
                 description = "Episode $epNum of ${anime?.title ?: "the series"}",
                 durationSeconds = (anime?.episodeDuration?.toLong() ?: 24L) * 60L,
-                introStartSeconds = 85L,
-                introEndSeconds = 175L,
-                outroStartSeconds = 1290L,
-                outroEndSeconds = 1380L,
-                recapStartSeconds = 0L,
-                recapEndSeconds = if (epNum > 1) 40L else 0L
+                introStartSeconds = null,
+                introEndSeconds = null,
+                outroStartSeconds = null,
+                outroEndSeconds = null,
+                recapStartSeconds = null,
+                recapEndSeconds = null
             )
         }
         animeDao.insertCachedEpisodes(generated)

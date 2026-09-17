@@ -273,6 +273,16 @@ fun LibraryScreen(
                     horizontalArrangement = Arrangement.spacedBy(14.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    if (uiState.error != null && uiState.libraryAnime.isEmpty()) {
+                        item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(2) }) {
+                            Column(
+                                modifier = Modifier.fillMaxWidth().padding(32.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text("Failed to load anime.", color = TextSecondary)
+                            }
+                        }
+                    }
                     items(uiState.libraryAnime) { anime ->
                         AnimeCard(
                             anime = anime,

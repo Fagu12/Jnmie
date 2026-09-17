@@ -7,9 +7,7 @@ import androidx.room.Query
 import com.example.data.local.entity.AniListMediaEntryEntity
 import com.example.data.local.entity.CachedAnimeEntity
 import com.example.data.local.entity.CachedEpisodeEntity
-import com.example.data.local.entity.ExtensionRepoEntity
 import com.example.data.local.entity.FavoriteAnimeEntity
-import com.example.data.local.entity.InstalledExtensionEntity
 import com.example.data.local.entity.PendingSyncEntity
 import com.example.data.local.entity.WatchHistoryEntity
 import kotlinx.coroutines.flow.Flow
@@ -105,42 +103,6 @@ interface PlaybackDao {
 }
 
 @Dao
-interface ExtensionDao {
-    @Query("SELECT * FROM extension_repos ORDER BY lastRefreshed DESC")
-    fun getRepositories(): Flow<List<ExtensionRepoEntity>>
-
-    @Query("SELECT * FROM extension_repos WHERE url = :url LIMIT 1")
-    suspend fun getRepository(url: String): ExtensionRepoEntity?
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertRepository(repo: ExtensionRepoEntity)
-
-    @Query("DELETE FROM extension_repos WHERE url = :url")
-    suspend fun deleteRepository(url: String)
-
-    @Query("SELECT * FROM installed_extensions")
-    fun getInstalledExtensions(): Flow<List<InstalledExtensionEntity>>
-
-    @Query("SELECT * FROM installed_extensions WHERE isEnabled = 1")
-    suspend fun getEnabledExtensions(): List<InstalledExtensionEntity>
-
-    @Query("SELECT * FROM installed_extensions WHERE isEnabled = 1")
-    fun getEnabledExtensionsFlow(): Flow<List<InstalledExtensionEntity>>
-
-    @Query("SELECT * FROM installed_extensions WHERE id = :id LIMIT 1")
-    suspend fun getExtension(id: String): InstalledExtensionEntity?
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertExtension(extension: InstalledExtensionEntity)
-
-    @Query("DELETE FROM installed_extensions WHERE id = :id")
-    suspend fun deleteExtension(id: String)
-
-    @Query("UPDATE installed_extensions SET isEnabled = :isEnabled WHERE id = :id")
-    suspend fun setExtensionEnabled(id: String, isEnabled: Boolean)
-}
-
-@Dao
 interface SyncDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPendingSync(entity: PendingSyncEntity): Long
@@ -181,5 +143,3 @@ interface SyncDao {
     @Query("DELETE FROM anilist_media_entries")
     suspend fun clearAniListEntries()
 }
-
-

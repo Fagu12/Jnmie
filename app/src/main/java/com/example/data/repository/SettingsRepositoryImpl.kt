@@ -114,5 +114,36 @@ class SettingsRepositoryImpl(
     override suspend fun resetSettings() {
         preferencesDataStore.resetSettings()
     }
+    
+    override suspend fun setSubEnabled(enabled: Boolean) {
+        preferencesDataStore.updateSettings { it.copy(subEnabled = enabled) }
+    }
+    override suspend fun setSubLanguage(language: String) {
+        preferencesDataStore.updateSettings { it.copy(subLanguage = language) }
+    }
+    override suspend fun setSubFontFamily(family: String) {
+        preferencesDataStore.updateSettings { it.copy(subFontFamily = family) }
+    }
+    override suspend fun setSubFontSize(size: String) {
+        preferencesDataStore.updateSettings { it.copy(subFontSize = size) }
+    }
+    override suspend fun setSubFontWeight(weight: String) {
+        preferencesDataStore.updateSettings { it.copy(subFontWeight = weight) }
+    }
+    override suspend fun setSubTextColor(color: String) {
+        preferencesDataStore.updateSettings { it.copy(subTextColor = color) }
+    }
+    override suspend fun setSubBackgroundStyle(style: String) {
+        preferencesDataStore.updateSettings { it.copy(subBackgroundStyle = style) }
+    }
+    override suspend fun setSubBackgroundOpacity(opacity: Float) {
+        preferencesDataStore.updateSettings { it.copy(subBackgroundOpacity = opacity) }
+    }
+    override suspend fun setSubOutlineStyle(style: String) {
+        preferencesDataStore.updateSettings { it.copy(subOutlineStyle = style) }
+    }
+    override suspend fun setSubPosition(position: String) {
+        preferencesDataStore.updateSettings { it.copy(subPosition = position) }
+    }
 }
 

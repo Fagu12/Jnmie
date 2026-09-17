@@ -21,7 +21,7 @@ object AppConfig {
      * When false, the UI displays the structured streaming player staging screen,
      * awaiting the dedicated streaming implementation.
      */
-    const val IS_STREAMING_ENABLED = false
+    const val IS_STREAMING_ENABLED = true
     const val IS_ANILIST_SYNC_ENABLED = true
     const val IS_EXTENSIONS_ENABLED = true
     const val IS_OFFLINE_CACHE_ENABLED = true

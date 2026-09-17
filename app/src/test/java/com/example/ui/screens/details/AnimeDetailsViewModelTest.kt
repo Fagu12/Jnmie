@@ -148,6 +148,16 @@ class AnimeDetailsViewModelTest {
         override suspend fun setPreferredProvider(providerId: String) {}
         override suspend fun setSyncConflictStrategy(strategy: String) {}
         override suspend fun setAutoSyncAniList(enabled: Boolean) {}
+        override suspend fun setSubEnabled(enabled: Boolean) {}
+        override suspend fun setSubLanguage(language: String) {}
+        override suspend fun setSubFontFamily(family: String) {}
+        override suspend fun setSubFontSize(size: String) {}
+        override suspend fun setSubFontWeight(weight: String) {}
+        override suspend fun setSubTextColor(color: String) {}
+        override suspend fun setSubBackgroundStyle(style: String) {}
+        override suspend fun setSubBackgroundOpacity(opacity: Float) {}
+        override suspend fun setSubOutlineStyle(style: String) {}
+        override suspend fun setSubPosition(position: String) {}
         override suspend fun resetSettings() {}
     }
 

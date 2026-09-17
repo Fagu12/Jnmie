@@ -1,4 +1,5 @@
 package com.example.ui.screens.explore
+import androidx.compose.material.icons.filled.CloudOff
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -408,6 +409,27 @@ fun ExploreScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         CircularProgressIndicator(color = AnimePrimary)
+                    }
+                }
+            } else if (uiState.error != null && uiState.animeList.isEmpty()) {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(300.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(Icons.Filled.CloudOff, contentDescription = "Error", tint = TextMuted, modifier = Modifier.size(48.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(uiState.error ?: "An error occurred", color = TextSecondary)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        androidx.compose.material3.Button(
+                            onClick = { viewModel.refresh() },
+                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = AnimePrimary)
+                        ) {
+                            Text("Retry", color = Color.Black)
+                        }
                     }
                 }
             } else if (uiState.animeList.isEmpty()) {

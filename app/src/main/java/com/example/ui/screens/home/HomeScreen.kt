@@ -1,4 +1,5 @@
 package com.example.ui.screens.home
+import androidx.compose.material.icons.filled.CloudOff
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -125,6 +126,23 @@ fun HomeScreen(
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator(color = AnimePrimary)
+            }
+        } else if (uiState.error != null && uiState.featuredAnime.isEmpty()) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(Icons.Filled.CloudOff, contentDescription = "Error", tint = TextMuted, modifier = Modifier.size(48.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(uiState.error ?: "An error occurred", color = TextSecondary)
+                Spacer(modifier = Modifier.height(16.dp))
+                androidx.compose.material3.Button(
+                    onClick = { viewModel.loadData(true) },
+                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = AnimePrimary)
+                ) {
+                    Text("Retry", color = Color.Black)
+                }
             }
         } else {
             LazyColumn(
@@ -343,7 +361,11 @@ fun HomeScreen(
                 onChangeService = { showProviderSheet = true },
                 onLoginWithAniList = {
                     showProfileSheet = false
-                    AniListOAuthHelper.launchOAuthBrowser(context)
+                    if (com.example.core.config.AniListAuthConfig.isPlaceholderClientId()) {
+                        android.widget.Toast.makeText(context, "Developer Error: A real AniList Client ID must be configured in secrets before login.", android.widget.Toast.LENGTH_LONG).show()
+                    } else {
+                        AniListOAuthHelper.launchOAuthBrowser(context)
+                    }
                 },
                 onSyncNow = {
                     viewModel.syncAniList()

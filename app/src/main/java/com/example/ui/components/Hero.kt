@@ -305,7 +305,7 @@ fun Hero(
                             containerColor = Color.White.copy(alpha = 0.12f),
                             contentColor = Color.White
                         ),
-                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                        border = ButtonDefaults.outlinedButtonBorder(enabled = true).copy(
                             brush = Brush.linearGradient(listOf(Color.White.copy(alpha = 0.3f), Color.White.copy(alpha = 0.1f)))
                         ),
                         shape = RoundedCornerShape(12.dp),

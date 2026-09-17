@@ -1,20 +1,18 @@
 package com.example.domain.repository
 
-import com.example.core.extension.AnimeExtension
 import com.example.domain.model.AniListMediaListEntry
 import com.example.domain.model.AniListUser
 import com.example.domain.model.Anime
 import com.example.domain.model.AppSettings
 import com.example.domain.model.ConflictStrategy
 import com.example.domain.model.Episode
-import com.example.domain.model.Extension
-import com.example.domain.model.ExtensionManifest
-import com.example.domain.model.ExtensionRepo
+import com.example.domain.model.LanguagePreference
 import com.example.domain.model.PlaybackProgress
-import com.example.domain.model.Repository
+import com.example.domain.model.ProviderInfo
 import com.example.domain.model.SyncReport
 import com.example.domain.model.SyncStatus
 import com.example.domain.model.VideoSource
+import com.example.domain.provider.AnimeProvider
 import kotlinx.coroutines.flow.Flow
 
 interface AnimeRepository {
@@ -83,38 +81,8 @@ interface SearchRepository {
     suspend fun clearRecentSearches()
 }
 
-interface ExtensionRepository {
-    fun getRepositories(): Flow<List<Repository>>
-    suspend fun addRepository(url: String): Result<Repository>
-    suspend fun removeRepository(url: String): Result<Unit>
-    suspend fun refreshRepositories(): Result<List<Repository>>
-    suspend fun getAvailableExtensions(repoUrl: String? = null): Result<List<Extension>>
-}
-
-interface ExtensionManager {
-    val installedExtensions: Flow<List<Extension>>
-    suspend fun installExtension(extension: Extension): Result<Unit>
-    suspend fun updateExtension(extensionId: String): Result<Unit>
-    suspend fun uninstallExtension(extensionId: String): Result<Unit>
-    suspend fun toggleExtension(extensionId: String, isEnabled: Boolean): Result<Unit>
-    suspend fun getEnabledExtensions(): List<Extension>
-    suspend fun getExtension(extensionId: String): Extension?
-    suspend fun getExtensionInstance(extensionId: String): AnimeExtension?
-}
-
-interface SourceResolver {
-    suspend fun resolveSources(
-        animeTitle: String,
-        episodeNumber: Int,
-        preferredProviderId: String? = null
-    ): Result<List<VideoSource>>
-
-    suspend fun resolveSourcesForEpisode(
-        animeTitle: String,
-        episode: Episode,
-        preferredProviderId: String? = null
-    ): Result<List<VideoSource>>
-}
+typealias ProviderManager = com.example.domain.provider.ProviderManager
+typealias SourceResolver = com.example.domain.provider.SourceResolver
 
 interface PlaybackRepository {
     fun getContinueWatching(): Flow<List<PlaybackProgress>>
@@ -159,5 +127,15 @@ interface SettingsRepository {
     suspend fun setSyncConflictStrategy(strategy: String)
     suspend fun setAutoSyncAniList(enabled: Boolean)
     suspend fun resetSettings()
+    suspend fun setSubEnabled(enabled: Boolean)
+    suspend fun setSubLanguage(language: String)
+    suspend fun setSubFontFamily(family: String)
+    suspend fun setSubFontSize(size: String)
+    suspend fun setSubFontWeight(weight: String)
+    suspend fun setSubTextColor(color: String)
+    suspend fun setSubBackgroundStyle(style: String)
+    suspend fun setSubBackgroundOpacity(opacity: Float)
+    suspend fun setSubOutlineStyle(style: String)
+    suspend fun setSubPosition(position: String)
 }
 

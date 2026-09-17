@@ -62,7 +62,6 @@ enum class NavItem(
     HOME("Home", Icons.Filled.Home, Icons.Outlined.Home, "nav_home"),
     EXPLORE("Anime", Icons.Filled.PlayCircle, Icons.Outlined.PlayCircleOutline, "nav_explore"),
     LIBRARY("Library", Icons.Filled.Bookmark, Icons.Outlined.BookmarkBorder, "nav_library"),
-    EXTENSIONS("Extensions", Icons.Filled.Extension, Icons.Outlined.Extension, "nav_extensions"),
     SETTINGS("Settings", Icons.Filled.Settings, Icons.Outlined.Settings, "nav_settings")
 }
 
