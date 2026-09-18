@@ -230,7 +230,7 @@ class PlayerViewModel(
                 val anime = _state.value.anime
                 val ep = _state.value.episode
 
-                // 1. If we haven't re-resolved fresh for this episode yet, resolve the source again fresh from extension
+                // 1. If we haven't re-resolved fresh for this episode yet, resolve the source again fresh from source providers
                 if (reResolutionAttempts < 1 && anime != null && ep != null) {
                     reResolutionAttempts++
                     val preferredProvider = _state.value.settings?.preferredProviderId

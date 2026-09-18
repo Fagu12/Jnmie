@@ -163,7 +163,7 @@ data class NextAiringEpisode(
     val timeUntilAiring: Long = 0L
 )
 
-data class Episode(
+data class AnimeEpisode(
     val id: String,
     val animeId: String,
     val number: Int,
@@ -181,8 +181,11 @@ data class Episode(
     val isWatched: Boolean = false
 )
 
+typealias Episode = AnimeEpisode
+
 data class VideoSource(
     val id: String,
+    val sourceName: String = "Built-in Provider",
     val serverName: String,
     val quality: String, // e.g. "1080p", "720p", "480p", "Auto"
     val isDub: Boolean = false,
@@ -271,15 +274,33 @@ data class AudioTrack(
 
 enum class SegmentType {
     INTRO,
-    OUTRO,
-    RECAP
+    RECAP,
+    OUTRO
 }
 
 data class SkipSegment(
     val type: SegmentType,
-    val startSeconds: Long,
-    val endSeconds: Long
-)
+    val startTimeMs: Long,
+    val endTimeMs: Long
+) {
+    val startSeconds: Long get() = startTimeMs / 1000L
+    val endSeconds: Long get() = (endTimeMs + 999L) / 1000L
+
+    /**
+     * Checks if this segment has reliable, valid timestamp metadata.
+     */
+    val isValid: Boolean get() = endTimeMs > startTimeMs && startTimeMs >= 0L
+
+    companion object {
+        fun fromSeconds(type: SegmentType, startSeconds: Long, endSeconds: Long): SkipSegment {
+            return SkipSegment(
+                type = type,
+                startTimeMs = startSeconds * 1000L,
+                endTimeMs = endSeconds * 1000L
+            )
+        }
+    }
+}
 
 data class ProviderInfo(
     val id: String,

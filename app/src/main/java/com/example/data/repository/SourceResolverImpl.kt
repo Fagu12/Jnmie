@@ -3,6 +3,7 @@ package com.example.data.repository
 import com.example.core.resolver.AnikotoStreamResolver
 import com.example.data.provider.KiwiProvider
 import com.example.data.provider.MegaPlayProvider
+import com.example.data.provider.MockTestSourceProvider
 import com.example.data.provider.MultiSourceProvider
 import com.example.data.provider.VidCloudProvider
 import com.example.data.provider.VidstreamProvider
@@ -35,7 +36,8 @@ class ProviderManagerImpl(
         VidstreamProvider(client),
         VidCloudProvider(client),
         KiwiProvider(client),
-        MegaPlayProvider(client)
+        MegaPlayProvider(client),
+        MockTestSourceProvider()
     )
 
     private val _enabledMap = MutableStateFlow<Map<String, Boolean>>(
@@ -87,7 +89,8 @@ class SourceResolverImpl(
         VidstreamProvider(client),
         VidCloudProvider(client),
         KiwiProvider(client),
-        MegaPlayProvider(client)
+        MegaPlayProvider(client),
+        MockTestSourceProvider()
     )
 
     override val registeredProviders: List<AnimeProvider>

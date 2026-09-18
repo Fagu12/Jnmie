@@ -720,6 +720,7 @@ object AnikotoStreamResolver {
         return when (playbackSource) {
             is PlaybackSource.Hls -> VideoSource(
                 id = sourceId,
+                sourceName = serverName,
                 serverName = serverName,
                 quality = "Auto",
                 isDub = isDub,
@@ -731,6 +732,7 @@ object AnikotoStreamResolver {
             )
             is PlaybackSource.Mp4 -> VideoSource(
                 id = sourceId,
+                sourceName = serverName,
                 serverName = serverName,
                 quality = "1080p",
                 isDub = isDub,
@@ -741,6 +743,7 @@ object AnikotoStreamResolver {
             )
             is PlaybackSource.Embed -> VideoSource(
                 id = sourceId,
+                sourceName = serverName,
                 serverName = "$serverName (Embed)",
                 quality = "Embed",
                 isDub = isDub,

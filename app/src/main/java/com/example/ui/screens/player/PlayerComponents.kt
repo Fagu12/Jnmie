@@ -349,8 +349,19 @@ fun PlayerSkipPill(
 ) {
     val activeSegment = uiState.activeSkipSegment
     val label = when {
-        activeSegment != null -> "Skip ${activeSegment.type.name} (+${activeSegment.endSeconds - activeSegment.startSeconds}s)"
-        else -> "+${uiState.megaSkipDurationSeconds}"
+        activeSegment != null -> {
+            val segmentName = when (activeSegment.type) {
+                com.example.domain.model.SegmentType.INTRO -> "Intro"
+                com.example.domain.model.SegmentType.RECAP -> "Recap"
+                com.example.domain.model.SegmentType.OUTRO -> "Outro"
+            }
+            if (uiState.isAutoSkipCountingDown && uiState.autoSkipSecondsRemaining > 0) {
+                "Auto-skipping $segmentName (${uiState.autoSkipSecondsRemaining}s)"
+            } else {
+                "Skip $segmentName"
+            }
+        }
+        else -> "+${uiState.megaSkipDurationSeconds}s"
     }
 
     Box(

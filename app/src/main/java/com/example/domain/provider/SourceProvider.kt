@@ -2,14 +2,14 @@ package com.example.domain.provider
 
 import com.example.domain.model.AnikotoServer
 import com.example.domain.model.Anime
-import com.example.domain.model.Episode
+import com.example.domain.model.AnimeEpisode
 import com.example.domain.model.LanguagePreference
 import com.example.domain.model.ProviderInfo
 import com.example.domain.model.VideoSource
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Capabilities supported by an [AnimeProvider].
+ * Capabilities supported by an anime [SourceProvider].
  */
 enum class ProviderCapability {
     SEARCH,
@@ -28,14 +28,15 @@ enum class ProviderCapability {
  * Dedicated contract for episode listings.
  */
 interface EpisodeProvider {
-    suspend fun getEpisodes(animeTitle: String, animeId: String? = null): Result<List<Episode>>
+    suspend fun getEpisodes(animeTitle: String, animeId: String? = null): Result<List<AnimeEpisode>>
 }
 
 /**
- * Clean domain abstraction for an authorized anime metadata and streaming provider.
+ * Clean domain abstraction for a built-in streaming & metadata source provider.
+ * Compiled directly into the Just Anime APK.
  * Completely decoupled from Android UI, ViewModel, and Media3/ExoPlayer layers.
  */
-interface AnimeProvider : EpisodeProvider {
+interface SourceProvider : EpisodeProvider {
     val id: String
     val name: String
     val baseUrl: String
@@ -76,12 +77,12 @@ interface AnimeProvider : EpisodeProvider {
     /**
      * Fetches the complete episode list for an anime given its ID.
      */
-    suspend fun getEpisodes(animeId: String): Result<List<Episode>> = Result.success(emptyList())
+    suspend fun getEpisodes(animeId: String): Result<List<AnimeEpisode>> = Result.success(emptyList())
 
     /**
      * Fetches episode list given an anime title and optional fallback ID.
      */
-    override suspend fun getEpisodes(animeTitle: String, animeId: String?): Result<List<Episode>> {
+    override suspend fun getEpisodes(animeTitle: String, animeId: String?): Result<List<AnimeEpisode>> {
         val targetId = animeId ?: run {
             searchAnime(animeTitle, 1).getOrNull()?.firstOrNull()?.id ?: ""
         }
@@ -133,6 +134,11 @@ interface AnimeProvider : EpisodeProvider {
 }
 
 /**
+ * Typealias for compatibility across the codebase.
+ */
+typealias AnimeProvider = SourceProvider
+
+/**
  * Dedicated contract for extracting media streams from raw embed URLs or hosters.
  */
 interface StreamExtractor {
@@ -145,7 +151,7 @@ interface StreamExtractor {
  * Domain coordinator for resolving streams across all registered authorized providers.
  */
 interface SourceResolver {
-    val registeredProviders: List<AnimeProvider>
+    val registeredProviders: List<SourceProvider>
 
     suspend fun resolveSources(
         animeTitle: String,
@@ -155,7 +161,7 @@ interface SourceResolver {
 
     suspend fun resolveSourcesForEpisode(
         animeTitle: String,
-        episode: Episode,
+        episode: AnimeEpisode,
         preferredProviderId: String? = null,
         languagePreference: LanguagePreference = LanguagePreference.SUB
     ): Result<List<VideoSource>>
@@ -176,15 +182,15 @@ interface SourceResolver {
         animeTitle: String,
         animeId: String? = null,
         preferredProviderId: String? = null
-    ): Result<List<Episode>>
+    ): Result<List<AnimeEpisode>>
 }
 
 /**
  * Domain coordinator for managing and querying anime providers.
  */
 interface ProviderManager {
-    val registeredProviders: Flow<List<AnimeProvider>>
+    val registeredProviders: Flow<List<SourceProvider>>
     suspend fun getAvailableProviders(): List<ProviderInfo>
-    suspend fun getProviderById(id: String): AnimeProvider?
+    suspend fun getProviderById(id: String): SourceProvider?
     suspend fun setProviderEnabled(providerId: String, isEnabled: Boolean)
 }

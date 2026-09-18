@@ -78,12 +78,20 @@ class Media3PlayerManager(
                 .setEnableDecoderFallback(true)
                 .setAllowedVideoJoiningTimeMs(5000)
                 .setMediaCodecSelector { mimeType, requiresSecureDecoder, requiresTunnelingDecoder ->
-                    val decoders = MediaCodecUtil.getDecoderInfos(mimeType, requiresSecureDecoder, requiresTunnelingDecoder)
-                    if (!_uiState.value.isHardwareDecoder) {
-                        // Prioritize software decoders to prevent component resource interface failure
-                        decoders.sortedBy { it.hardwareAccelerated }
-                    } else {
-                        decoders
+                    try {
+                        val decoders = MediaCodecSelector.DEFAULT.getDecoderInfos(mimeType, requiresSecureDecoder, requiresTunnelingDecoder)
+                        if (!_uiState.value.isHardwareDecoder) {
+                            // Prioritize software decoders when hardware decoding is turned off in settings
+                            decoders.sortedBy { it.hardwareAccelerated }
+                        } else {
+                            decoders
+                        }
+                    } catch (e: Exception) {
+                        try {
+                            MediaCodecSelector.DEFAULT.getDecoderInfos(mimeType, requiresSecureDecoder, requiresTunnelingDecoder)
+                        } catch (ex: Exception) {
+                            emptyList()
+                        }
                     }
                 }
         )
@@ -565,9 +573,10 @@ class Media3PlayerManager(
     override fun skipActiveSegment() {
         val active = _uiState.value.activeSkipSegment ?: return
         processedSkipSegments.add(active)
-        val targetMs = active.endSeconds * 1000L
-        seekTo(targetMs)
-        _uiState.update { it.copy(activeSkipSegment = null) }
+        if (active.isValid) {
+            seekTo(active.endTimeMs)
+        }
+        _uiState.update { it.copy(activeSkipSegment = null, isAutoSkipCountingDown = false, autoSkipSecondsRemaining = 0) }
     }
 
     override fun megaSkip() {
@@ -627,14 +636,17 @@ class Media3PlayerManager(
 
                     val skipSegments = _uiState.value.selectedSource?.skipSegments ?: emptyList()
                     val activeSegment = skipSegments.find { seg ->
-                        currentSec >= seg.startSeconds && currentSec < seg.endSeconds && !processedSkipSegments.contains(seg)
+                        seg.isValid &&
+                        currentPos >= seg.startTimeMs &&
+                        currentPos < seg.endTimeMs &&
+                        !processedSkipSegments.contains(seg)
                     }
 
                     var autoSkipNotice: String? = null
                     var isCountingDown = false
                     var remainingSeconds = 0
 
-                    if (activeSegment != null) {
+                    if (activeSegment != null && activeSegment.isValid) {
                         val shouldAutoSkip = when (activeSegment.type) {
                             SegmentType.INTRO -> isAutoSkipIntroEnabled()
                             SegmentType.OUTRO -> isAutoSkipOutroEnabled()
@@ -642,19 +654,23 @@ class Media3PlayerManager(
                         }
 
                         if (shouldAutoSkip && !cancelledAutoSkipSegments.contains(activeSegment)) {
-                            val secondsIntoSegment = currentSec - activeSegment.startSeconds
-                            if (secondsIntoSegment >= 0) {
-                                val delaySeconds = 4L
-                                val timeRemaining = (delaySeconds - secondsIntoSegment).toInt()
+                            val msIntoSegment = currentPos - activeSegment.startTimeMs
+                            val countdownDurationMs = 3500L
+                            val remainingMs = countdownDurationMs - msIntoSegment
+                            val timeRemaining = ((remainingMs + 999L) / 1000L).toInt().coerceAtLeast(0)
 
-                                if (timeRemaining <= 0) {
-                                    processedSkipSegments.add(activeSegment)
-                                    seekTo(activeSegment.endSeconds * 1000L)
-                                    autoSkipNotice = "Auto-skipped ${activeSegment.type.name.lowercase().replaceFirstChar { it.uppercase() }}"
-                                } else {
-                                    isCountingDown = true
-                                    remainingSeconds = timeRemaining
+                            if (timeRemaining <= 0 || msIntoSegment >= countdownDurationMs) {
+                                processedSkipSegments.add(activeSegment)
+                                seekTo(activeSegment.endTimeMs)
+                                val segName = when (activeSegment.type) {
+                                    SegmentType.INTRO -> "Intro"
+                                    SegmentType.RECAP -> "Recap"
+                                    SegmentType.OUTRO -> "Outro"
                                 }
+                                autoSkipNotice = "Auto-skipped $segName"
+                            } else {
+                                isCountingDown = true
+                                remainingSeconds = timeRemaining
                             }
                         }
                     }

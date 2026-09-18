@@ -2,13 +2,14 @@ package com.example.ui.screens.details
 
 import com.example.data.mock.MockAnimeData
 import com.example.domain.model.Anime
+import com.example.domain.model.AnimeEpisode
 import com.example.domain.model.AppSettings
-import com.example.domain.model.Episode
-import com.example.domain.model.ExtensionManifest
 import com.example.domain.model.PlaybackProgress
+import com.example.domain.model.ProviderInfo
+import com.example.domain.provider.SourceProvider
 import com.example.domain.repository.AnimeRepository
-import com.example.domain.repository.ExtensionManager
 import com.example.domain.repository.PlaybackRepository
+import com.example.domain.repository.ProviderManager
 import com.example.domain.repository.SettingsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -36,7 +37,7 @@ class AnimeDetailsViewModelTest {
     private val sampleAnime = MockAnimeData.featuredAnimeList.first()
 
     private val fakeEpisodes = (1..12).map { ep ->
-        Episode(
+        AnimeEpisode(
             id = "ep_$ep",
             animeId = sampleAnime.id,
             number = ep,
@@ -66,7 +67,7 @@ class AnimeDetailsViewModelTest {
             page: Int
         ): Result<List<Anime>> = Result.success(emptyList())
         override suspend fun getAnimeDetails(animeId: String): Result<Anime> = Result.success(sampleAnime)
-        override suspend fun getEpisodes(animeId: String): Result<List<Episode>> = Result.success(fakeEpisodes)
+        override suspend fun getEpisodes(animeId: String): Result<List<AnimeEpisode>> = Result.success(fakeEpisodes)
         override fun getFavoriteAnimeList(): Flow<List<Anime>> = favoriteListFlow
         override fun isFavoriteFlow(animeId: String): Flow<Boolean> = flowOf(false)
         override suspend fun isFavorite(animeId: String): Boolean = false
@@ -110,15 +111,11 @@ class AnimeDetailsViewModelTest {
         override suspend fun clearHistory() {}
     }
 
-    private val fakeExtensionManager = object : ExtensionManager {
-        override val installedExtensions: Flow<List<com.example.domain.model.Extension>> = flowOf(emptyList())
-        override suspend fun installExtension(extension: com.example.domain.model.Extension): Result<Unit> = Result.success(Unit)
-        override suspend fun updateExtension(extensionId: String): Result<Unit> = Result.success(Unit)
-        override suspend fun uninstallExtension(extensionId: String): Result<Unit> = Result.success(Unit)
-        override suspend fun toggleExtension(extensionId: String, isEnabled: Boolean): Result<Unit> = Result.success(Unit)
-        override suspend fun getEnabledExtensions(): List<com.example.domain.model.Extension> = emptyList()
-        override suspend fun getExtension(extensionId: String): com.example.domain.model.Extension? = null
-        override suspend fun getExtensionInstance(extensionId: String): com.example.core.extension.AnimeExtension? = null
+    private val fakeProviderManager = object : ProviderManager {
+        override val registeredProviders: Flow<List<SourceProvider>> = flowOf(emptyList())
+        override suspend fun getAvailableProviders(): List<ProviderInfo> = emptyList()
+        override suspend fun getProviderById(id: String): SourceProvider? = null
+        override suspend fun setProviderEnabled(providerId: String, isEnabled: Boolean) {}
     }
 
     private val fakeSettingsRepository = object : SettingsRepository {
@@ -177,7 +174,7 @@ class AnimeDetailsViewModelTest {
             animeId = sampleAnime.id,
             animeRepository = fakeAnimeRepository,
             playbackRepository = fakePlaybackRepository,
-            extensionManager = fakeExtensionManager,
+            providerManager = fakeProviderManager,
             settingsRepository = fakeSettingsRepository
         )
 
@@ -199,7 +196,7 @@ class AnimeDetailsViewModelTest {
             animeId = sampleAnime.id,
             animeRepository = fakeAnimeRepository,
             playbackRepository = fakePlaybackRepository,
-            extensionManager = fakeExtensionManager,
+            providerManager = fakeProviderManager,
             settingsRepository = fakeSettingsRepository
         )
 
@@ -221,7 +218,7 @@ class AnimeDetailsViewModelTest {
             animeId = sampleAnime.id,
             animeRepository = fakeAnimeRepository,
             playbackRepository = fakePlaybackRepository,
-            extensionManager = fakeExtensionManager,
+            providerManager = fakeProviderManager,
             settingsRepository = fakeSettingsRepository
         )
 
@@ -241,7 +238,7 @@ class AnimeDetailsViewModelTest {
             animeId = sampleAnime.id,
             animeRepository = fakeAnimeRepository,
             playbackRepository = fakePlaybackRepository,
-            extensionManager = fakeExtensionManager,
+            providerManager = fakeProviderManager,
             settingsRepository = fakeSettingsRepository
         )
 

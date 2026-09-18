@@ -505,6 +505,27 @@ fun PlayerScreen(
             }
         }
 
+        // --- 6b. Floating Skip Pill when inside a known segment and controls are hidden ---
+        AnimatedVisibility(
+            visible = playerState.activeSkipSegment != null && !playerState.isLocked && !playerState.isControlsVisible && playerState.error == null,
+            enter = fadeIn(tween(200)),
+            exit = fadeOut(tween(200))
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(end = 24.dp, bottom = 48.dp),
+                contentAlignment = Alignment.BottomEnd
+            ) {
+                PlayerSkipPill(
+                    uiState = playerState,
+                    onSkipClick = {
+                        viewModel.skipActiveSegment()
+                    }
+                )
+            }
+        }
+
         // --- 7. Main Player Controls Overlay (Top Bar, Center, Skip Pill, Bottom Bar) ---
         AnimatedVisibility(
             visible = playerState.isControlsVisible && playerState.error == null && !playerState.isLocked,
